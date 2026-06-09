@@ -1,8 +1,9 @@
 use std::io::{Write, stdout};
 
 use bevy_ecs::{
+    entity::Entity,
     resource::Resource,
-    system::{Commands, In, Res},
+    system::{Commands, In, Query, Res},
 };
 use crossterm::{
     cursor::MoveTo,
@@ -11,28 +12,66 @@ use crossterm::{
     terminal::{Clear, ClearType},
 };
 
-use crate::{BufferSize, Exit};
+use crate::{BufferSize, Exit, Position};
 
-pub fn render(buff_size: Res<BufferSize>) -> anyhow::Result<()> {
-    let BufferSize { cols, rows } = buff_size.as_ref();
+#[derive(Debug, Resource)]
+pub enum Renderer {
+    Hello,
+    Entities,
+}
 
-    let center_col = cols / 2;
-    let center_row = rows / 2;
+pub fn render_positions(
+    buff_size: Res<BufferSize>,
+    query: Query<&Position>,
+    renderer: Res<Renderer>,
+) -> anyhow::Result<()> {
+    match *renderer {
+        Renderer::Hello => {}
+        Renderer::Entities => {
+            let BufferSize { cols, rows } = buff_size.as_ref();
 
-    let start_col = center_col - 6;
-
-    if *cols >= center_col + 6 {
-        let mut out = stdout().lock();
-        queue!(
-            out,
-            Clear(ClearType::All),
-            MoveTo(0, 0),
-            MoveTo(start_col, center_row),
-            Print("hello there!")
-        )?;
-        out.flush()?;
+            let mut out = stdout().lock();
+            queue!(out, Clear(ClearType::All))?;
+            for Position { col, row } in &query {
+                if !(col >= cols || row >= rows) {
+                    queue!(out, MoveTo(0, 0), MoveTo(*col, *row), Print("x"))?;
+                }
+            }
+            out.flush()?;
+        }
     }
 
+    Ok(())
+}
+
+pub fn render_hello_there(
+    buff_size: Res<BufferSize>,
+    query: Query<&Position>,
+    renderer: Res<Renderer>,
+) -> anyhow::Result<()> {
+    match *renderer {
+        Renderer::Hello => {
+            let BufferSize { cols, rows } = buff_size.as_ref();
+
+            let center_col = cols / 2;
+            let center_row = rows / 2;
+
+            let start_col = center_col - 6;
+
+            if *cols >= center_col + 6 {
+                let mut out = stdout().lock();
+                queue!(
+                    out,
+                    Clear(ClearType::All),
+                    MoveTo(0, 0),
+                    MoveTo(start_col, center_row),
+                    Print("hello there!")
+                )?;
+                out.flush()?;
+            }
+        }
+        Renderer::Entities => {}
+    }
     Ok(())
 }
 

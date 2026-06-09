@@ -31,13 +31,21 @@ struct BufferSize {
     rows: u16,
 }
 
+#[derive(Debug, Component)]
+struct Position {
+    col: u16,
+    row: u16,
+}
+
 pub fn app() -> Result<()> {
     let (cols, rows) = setup_terminal()?;
     let buffer_size = BufferSize { cols, rows };
-    let (mut world, mut schedule) = setup_bevy(buffer_size);
+    let (mut world, mut startup_schedule, mut update_schedule) = setup_bevy(buffer_size);
+
+    startup_schedule.run(&mut world);
 
     loop {
-        schedule.run(&mut world);
+        update_schedule.run(&mut world);
 
         if world.get_resource::<Exit>().is_some() {
             clean_up_terminal()?;
@@ -46,21 +54,31 @@ pub fn app() -> Result<()> {
     }
 }
 
-fn setup_bevy(buffer_size: BufferSize) -> (World, Schedule) {
+fn setup_bevy(buffer_size: BufferSize) -> (World, Schedule, Schedule) {
     let mut world = World::new();
     world.insert_resource(buffer_size);
+    world.insert_resource(crate::render::Renderer::Hello);
 
-    let mut schedule = Schedule::default();
+    let mut startup_schedule = Schedule::default();
+    startup_schedule.add_systems(spawn_random_components);
 
-    schedule.add_systems(
+    let mut update_schedule = Schedule::default();
+    update_schedule.add_systems(
         (
             crate::event::process_events.pipe(crate::event::process_event_error_handler),
-            render::render.pipe(render::error_handler_system),
+            render::render_positions.pipe(render::error_handler_system),
+            render::render_hello_there.pipe(render::error_handler_system),
         )
             .chain(),
     );
 
-    (world, schedule)
+    (world, startup_schedule, update_schedule)
+}
+
+fn spawn_random_components(mut commands: Commands, buf_size: Res<BufferSize>) {
+    for i in 1..=100 {
+        commands.spawn(Position { col: i * 3, row: i });
+    }
 }
 
 fn setup_terminal() -> Result<(u16, u16)> {
