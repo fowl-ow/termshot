@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 crossterm = "0.29.0"
 bevy_ecs = { version = "0.18.1", features = [] }
+anyhow = "1.0.102"
 
 [lints.clippy]
 # for bevy projects because of Res<T> and ResMut<T>
