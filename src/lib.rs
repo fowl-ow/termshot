@@ -16,6 +16,7 @@ use crossterm::{
     },
 };
 
+mod event;
 mod input;
 mod render;
 
@@ -53,54 +54,13 @@ fn setup_bevy(buffer_size: BufferSize) -> (World, Schedule) {
 
     schedule.add_systems(
         (
-            process_events.pipe(process_event_error_handler),
+            crate::event::process_events.pipe(crate::event::process_event_error_handler),
             render::render.pipe(render::error_handler_system),
         )
             .chain(),
     );
 
     (world, schedule)
-}
-
-fn process_events(mut buff_size: ResMut<BufferSize>, mut commands: Commands) -> anyhow::Result<()> {
-    while poll(Duration::from_millis(0))? {
-        match read()? {
-            Event::Resize(cols, rows) => {
-                buff_size.cols = cols;
-                buff_size.rows = rows;
-            }
-            Event::FocusGained => {}
-            Event::FocusLost => {}
-            Event::Key(key_event) => process_key_events(key_event, &mut commands),
-            Event::Mouse(_mouse_event) => {}
-            Event::Paste(_) => {}
-        }
-    }
-    Ok(())
-}
-
-fn process_event_error_handler(In(result): In<Result<(), anyhow::Error>>) {
-    if result.is_err() {}
-}
-
-#[expect(unused_variables)]
-fn process_key_events(key_event: KeyEvent, commands: &mut Commands) {
-    match key_event {
-        KeyEvent {
-            code: KeyCode::Char('q'),
-            kind,
-            modifiers,
-            state,
-        } => {
-            commands.insert_resource(Exit);
-        }
-        KeyEvent {
-            code,
-            modifiers,
-            kind,
-            state,
-        } => {}
-    }
 }
 
 fn setup_terminal() -> Result<(u16, u16)> {
