@@ -77,7 +77,7 @@ fn setup_bevy(buffer_size: BufferSize) -> (World, Schedule, Schedule) {
 
 fn spawn_random_components(mut commands: Commands, buf_size: Res<BufferSize>) {
     for i in 1..=100 {
-        commands.spawn(Position { col: i * 3, row: i });
+        commands.spawn(Position { col: i * i, row: i });
     }
 }
 
