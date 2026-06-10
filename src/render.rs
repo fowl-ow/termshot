@@ -1,9 +1,12 @@
 use std::io::{Write, stdout};
 
-use bevy_ecs::{
-    entity::Entity,
-    resource::Resource,
-    system::{Commands, In, Query, Res},
+use bevy::{
+    app::{AppExit, Plugin, PostUpdate},
+    ecs::{
+        message::MessageWriter,
+        resource::Resource,
+        system::{Commands, In, IntoSystem, Query, Res},
+    },
 };
 use crossterm::{
     cursor::MoveTo,
@@ -12,7 +15,21 @@ use crossterm::{
     terminal::{Clear, ClearType},
 };
 
-use crate::{BufferSize, Exit, Position};
+use crate::{game::Position, terminal::BufferSize};
+
+pub struct TermshotRenderPlugin;
+
+impl Plugin for TermshotRenderPlugin {
+    fn build(&self, app: &mut bevy::app::App) {
+        app.insert_resource(Renderer::Hello).add_systems(
+            PostUpdate,
+            (
+                render_positions.pipe(error_handler_system),
+                render_hello_there.pipe(error_handler_system),
+            ),
+        );
+    }
+}
 
 #[derive(Debug, Resource)]
 pub enum Renderer {
@@ -75,9 +92,12 @@ pub fn render_hello_there(
     Ok(())
 }
 
-pub fn error_handler_system(In(result): In<Result<(), anyhow::Error>>, mut commands: Commands) {
+pub fn error_handler_system(
+    In(result): In<Result<(), anyhow::Error>>,
+    mut writer: MessageWriter<AppExit>,
+) {
     if let Err(e) = result {
         std::fs::write("crash.log", format!("Render failed: {}", e)).unwrap();
-        commands.insert_resource(Exit);
+        writer.write(AppExit::error());
     }
 }

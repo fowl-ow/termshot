@@ -5,8 +5,7 @@ edition = "2024"
 
 [dependencies]
 crossterm = "0.29.0"
-bevy_ecs = { version = "0.18.1", features = [] }
-bevy_app = { version = "0.18.1" }
+bevy = { version = "0.18.1", features = ["debug"] }
 anyhow = "1.0.102"
 
 [lints.clippy]

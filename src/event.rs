@@ -1,14 +1,27 @@
 use std::time::Duration;
 
-use bevy_ecs::system::{Commands, In, ResMut};
-use crossterm::event::{Event, poll, read};
+use bevy::{
+    app::{Plugin, PreUpdate},
+    ecs::{
+        message::MessageWriter,
+        system::{Commands, In, IntoSystem, ResMut},
+    },
+};
+use crossterm::event::{Event, KeyEvent, poll, read};
 
-use crate::{BufferSize, render::Renderer};
+use crate::{input::KeyEventMessage, render::Renderer, terminal::BufferSize};
+
+pub struct TermshotTerminalEventPlugin;
+
+impl Plugin for TermshotTerminalEventPlugin {
+    fn build(&self, app: &mut bevy::app::App) {
+        app.add_systems(PreUpdate, process_events.pipe(process_event_error_handler));
+    }
+}
 
 pub fn process_events(
     mut buff_size: ResMut<BufferSize>,
-    mut commands: Commands,
-    mut renderer: ResMut<Renderer>,
+    mut key_events_writer: MessageWriter<KeyEventMessage>,
 ) -> anyhow::Result<()> {
     while poll(Duration::from_millis(0))? {
         match read()? {
@@ -19,7 +32,7 @@ pub fn process_events(
             Event::FocusGained => {}
             Event::FocusLost => {}
             Event::Key(key_event) => {
-                crate::input::process_key_events(key_event, &mut commands, &mut renderer)
+                key_events_writer.write(KeyEventMessage(key_event));
             }
             Event::Mouse(_mouse_event) => {}
             Event::Paste(_) => {}
