@@ -7,8 +7,6 @@ use bevy::{
 };
 use crossterm::event::{KeyCode, KeyEvent};
 
-use crate::render::Renderer;
-
 pub struct TermshotInputPlugin;
 
 impl Plugin for TermshotInputPlugin {

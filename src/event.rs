@@ -9,7 +9,7 @@ use bevy::{
 };
 use crossterm::event::{Event, KeyEvent, poll, read};
 
-use crate::{input::KeyEventMessage, render::Renderer, terminal::BufferSize};
+use crate::{input::KeyEventMessage, terminal::BufferSize};
 
 pub struct TermshotTerminalEventPlugin;
 

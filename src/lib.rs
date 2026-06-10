@@ -27,13 +27,14 @@ use crossterm::{
 
 use crate::{
     event::TermshotTerminalEventPlugin, game::TermshotGameplayPlugin, input::TermshotInputPlugin,
-    render::TermshotRenderPlugin, terminal::TermshotTerminalPlugin,
+    render::TermshotRenderPlugin, state::TermshotGameStatePlugin, terminal::TermshotTerminalPlugin,
 };
 
 mod event;
 mod game;
 mod input;
 mod render;
+mod state;
 mod terminal;
 
 pub fn app() -> Result<()> {
@@ -43,6 +44,7 @@ pub fn app() -> Result<()> {
             (
                 TermshotTerminalPlugin,
                 TermshotTerminalEventPlugin,
+                TermshotGameStatePlugin,
                 TermshotGameplayPlugin,
                 TermshotInputPlugin,
                 TermshotRenderPlugin,
