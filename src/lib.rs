@@ -6,7 +6,7 @@ use anyhow::Result;
 
 use bevy::{
     MinimalPlugins,
-    app::{App, PluginGroup, ScheduleRunnerPlugin, Startup, Update},
+    app::{App, AppExit, PluginGroup, ScheduleRunnerPlugin, Startup, Update},
     ecs::{
         component::Component,
         resource::Resource,

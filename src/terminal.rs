@@ -7,9 +7,10 @@ use bevy::{
         resource::Resource,
         system::{Commands, In, IntoSystem},
     },
+    log::warn,
 };
 use crossterm::{
-    cursor::{Hide, MoveTo},
+    cursor::{Hide, MoveTo, Show},
     execute,
     terminal::{
         Clear, EnterAlternateScreen, LeaveAlternateScreen, SetTitle, disable_raw_mode,
@@ -33,7 +34,7 @@ impl Plugin for TermshotTerminalPlugin {
             size().expect("Panicking in TerminalPlugin Setup: Buffer size can't be determined!");
         app.insert_resource(BufferSize { cols, rows });
         app.add_systems(Startup, setup_terminal.pipe(handle_terminal_errors));
-        app.add_systems(Update, clean_up_terminal.pipe(handle_terminal_errors));
+        app.add_systems(Last, clean_up_terminal.pipe(handle_terminal_errors));
     }
 }
 
@@ -51,15 +52,15 @@ fn setup_terminal() -> anyhow::Result<()> {
 }
 
 fn clean_up_terminal(mut reader: MessageReader<AppExit>) -> anyhow::Result<()> {
-    let mut ran_once = false;
-    while !ran_once {
-        if reader.read().next().is_some() {
-            execute!(io::stdout(), LeaveAlternateScreen)?;
-            disable_raw_mode()?;
-            ran_once = true;
-        }
+    if reader.read().next().is_some() {
+        execute!(io::stdout(), LeaveAlternateScreen, Show)?;
+        disable_raw_mode()?;
     }
     Ok(())
 }
 
-fn handle_terminal_errors(In(result): In<Result<(), anyhow::Error>>, mut commands: Commands) {}
+fn handle_terminal_errors(In(result): In<Result<(), anyhow::Error>>) {
+    if let Err(e) = result {
+        bevy::log::error!("{}", e);
+    }
+}

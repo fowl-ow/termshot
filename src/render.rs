@@ -99,5 +99,6 @@ pub fn error_handler_system(
     if let Err(e) = result {
         std::fs::write("crash.log", format!("Render failed: {}", e)).unwrap();
         writer.write(AppExit::error());
+        bevy::log::error!("{}", e);
     }
 }
