@@ -3,13 +3,13 @@ use std::time::Duration;
 use bevy::{
     app::{Plugin, PreUpdate},
     ecs::{
-        message::MessageWriter,
+        message::{Message, MessageWriter},
         system::{Commands, In, IntoSystem, ResMut},
     },
 };
 use crossterm::event::{Event, KeyEvent, poll, read};
 
-use crate::{input::KeyEventMessage, terminal::BufferSize};
+use crate::terminal::BufferSize;
 
 pub struct TermshotTerminalEventPlugin;
 
@@ -18,6 +18,9 @@ impl Plugin for TermshotTerminalEventPlugin {
         app.add_systems(PreUpdate, process_events.pipe(process_event_error_handler));
     }
 }
+
+#[derive(Message)]
+pub struct KeyEventMessage(pub KeyEvent);
 
 pub fn process_events(
     mut buff_size: ResMut<BufferSize>,

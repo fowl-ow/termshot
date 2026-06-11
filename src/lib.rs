@@ -26,13 +26,15 @@ use crossterm::{
 };
 
 use crate::{
-    event::TermshotTerminalEventPlugin, game::TermshotGameplayPlugin, input::TermshotInputPlugin,
-    render::TermshotRenderPlugin, state::TermshotGameStatePlugin, terminal::TermshotTerminalPlugin,
+    event::TermshotTerminalEventPlugin, game::TermshotGameplayPlugin,
+    key_input::TermshotInputPlugin, render::TermshotRenderPlugin, state::TermshotGameStatePlugin,
+    terminal::TermshotTerminalPlugin,
 };
 
+mod cursor;
 mod event;
 mod game;
-mod input;
+mod key_input;
 mod render;
 mod state;
 mod terminal;

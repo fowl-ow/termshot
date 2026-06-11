@@ -3,6 +3,7 @@ use std::io;
 use bevy::{
     app::{AppExit, Last, Plugin, PostUpdate, Startup, Update},
     ecs::{
+        event::Event,
         message::MessageReader,
         resource::Resource,
         system::{Commands, In, IntoSystem},

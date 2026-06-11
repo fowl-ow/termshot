@@ -5,7 +5,9 @@ use bevy::{
         system::{Commands, If, In},
     },
 };
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::{KeyCode, KeyEvent, KeyEventState, KeyModifiers};
+
+use crate::event::KeyEventMessage;
 
 pub struct TermshotInputPlugin;
 
@@ -17,31 +19,42 @@ impl Plugin for TermshotInputPlugin {
 }
 
 #[derive(Message)]
-pub struct KeyEventMessage(pub KeyEvent);
+pub enum CursorIntentMessage {
+    GoBack,
+    Print(KeyCode),
+}
 
 #[expect(unused_variables)]
 pub fn process_key_events(
     mut key_event_reader: MessageReader<KeyEventMessage>,
     mut exit_writer: MessageWriter<AppExit>,
+    mut key_press_writer: MessageWriter<CursorIntentMessage>,
 ) {
     for message in key_event_reader.read() {
         match message.0 {
             KeyEvent {
                 code: KeyCode::Char('q'),
-                kind,
+                kind: crossterm::event::KeyEventKind::Press,
                 modifiers,
                 state,
             } => {
                 exit_writer.write(AppExit::Success);
             }
             KeyEvent {
-                code: KeyCode::Char(' '),
-                kind,
+                code: KeyCode::Backspace,
+                kind: crossterm::event::KeyEventKind::Press,
                 modifiers,
                 state,
             } => {
-                // Renderer::Hello => commands.insert_resource(Renderer::Entities),
-                // Renderer::Entities => commands.insert_resource(Renderer::Hello),
+                key_press_writer.write(CursorIntentMessage::GoBack);
+            }
+            KeyEvent {
+                code,
+                kind: crossterm::event::KeyEventKind::Press,
+                modifiers,
+                state,
+            } => {
+                key_press_writer.write(CursorIntentMessage::Print(code));
             }
             KeyEvent {
                 code,

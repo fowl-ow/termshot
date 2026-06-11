@@ -1,5 +1,6 @@
 use bevy::{
     app::Plugin,
+    ecs::resource::Resource,
     state::{app::AppExtStates, state::States},
 };
 
@@ -12,8 +13,9 @@ impl Plugin for TermshotGameStatePlugin {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default, States)]
-enum GameState {
+pub enum GameState {
     #[default]
     Intro,
     Ingame,
+    Exiting,
 }
