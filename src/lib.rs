@@ -35,6 +35,7 @@ mod cursor;
 mod event;
 mod game;
 mod key_input;
+mod map;
 mod render;
 mod state;
 mod terminal;
@@ -42,7 +43,7 @@ mod terminal;
 pub fn app() -> Result<()> {
     App::new()
         .add_plugins((
-            MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs(1 / 120))),
+            MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs(1 / 12))),
             (
                 TermshotTerminalPlugin,
                 TermshotTerminalEventPlugin,

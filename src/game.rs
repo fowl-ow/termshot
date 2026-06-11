@@ -1,4 +1,7 @@
+use std::task::Poll::Pending;
 use std::{fmt::Display, ops::Deref};
+
+use bevy::prelude::*;
 
 use bevy::{
     app::{Plugin, Startup, Update},
@@ -6,6 +9,7 @@ use bevy::{
     ecs::{
         component::Component,
         message::MessageReader,
+        query::With,
         resource::Resource,
         system::{Commands, Query, Res, ResMut},
     },
@@ -13,7 +17,10 @@ use bevy::{
     platform::collections::Equivalent,
 };
 
-use crate::{cursor, key_input::CursorIntentMessage, state::GameState, terminal::BufferSize};
+use crate::{
+    cursor, key_input::CursorIntentMessage, map::SpatialGrid, state::GameState,
+    terminal::BufferSize,
+};
 
 pub struct TermshotGameplayPlugin;
 
@@ -37,8 +44,7 @@ fn move_cursor_to_center(buff_size: Res<BufferSize>, mut cursor: ResMut<Cursor>)
 #[derive(Resource)]
 pub struct Cursor {
     pub position: Position,
-    direction: Direction,
-    history: Vec<(Character, Position, Direction)>,
+    pub direction: Direction,
 }
 
 impl Cursor {
@@ -46,11 +52,10 @@ impl Cursor {
         Self {
             position: Position::new(0, 0),
             direction: Direction::default(),
-            history: Vec::new(),
         }
     }
 
-    fn increment(&mut self) {
+    fn move_forward(&mut self) {
         match self.direction {
             Direction::Up => self.position.y -= 1,
             Direction::Down => self.position.y += 1,
@@ -59,49 +64,40 @@ impl Cursor {
         }
     }
 
-    fn decrement(&mut self) {
-        match self.direction {
-            Direction::Up => self.position.y += 1,
-            Direction::Down => self.position.y -= 1,
-            Direction::Left => self.position.x += 1,
-            Direction::Right => self.position.x -= 1,
-        }
-        if let Some((_, _, dir)) = self.history.last()
-            && *dir != self.direction
-        {
-            self.direction.transition(*dir);
-        }
+    fn get_rewind_pos(&self) -> Position {
+        self.position.add_direction_and_get(self.direction)
     }
 
-    fn push_to_history(&mut self, char: Character) {
-        self.history.push((char, self.position, self.direction));
+    fn rewind(&mut self, new_direction: Direction) {
+        self.position = self.get_rewind_pos();
+        self.direction = new_direction;
     }
 
-    fn ends_with(&self, target: &str) -> bool {
-        self.history
-            .iter()
-            .rev()
-            .map(|(c, _, _)| c.char)
-            .take(target.chars().count())
-            .eq(target.chars().rev())
-    }
+    // fn ends_with(&self, target: &str) -> bool {
+    //     self.history
+    //         .iter()
+    //         .rev()
+    //         .map(|(c, _, _)| c.char)
+    //         .take(target.chars().count())
+    //         .eq(target.chars().rev())
+    // }
 
-    fn find_direction_match(&self) -> Option<Direction> {
-        for dir in &[
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ] {
-            if self.ends_with(dir.as_str()) {
-                return Some(*dir);
-            }
-        }
-        None
-    }
+    // fn find_direction_match(&self) -> Option<Direction> {
+    //     for dir in &[
+    //         Direction::Up,
+    //         Direction::Down,
+    //         Direction::Left,
+    //         Direction::Right,
+    //     ] {
+    //         if self.ends_with(dir.as_str()) {
+    //             return Some(*dir);
+    //         }
+    //     }
+    //     None
+    // }
 }
 
-#[derive(Default, PartialEq, Eq, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Clone, Copy, Component)]
 pub enum Direction {
     Up,
     Down,
@@ -140,15 +136,48 @@ impl Direction {
     }
 }
 
-#[derive(Component, Clone, Copy)]
+#[derive(Component, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Position {
     pub x: u16,
     pub y: u16,
 }
 
+#[derive(Component)]
+pub struct PendingDespawn;
+
 impl Position {
     fn new(x: u16, y: u16) -> Self {
         Self { x, y }
+    }
+
+    fn add_direction_and_get(&self, direction: Direction) -> Self {
+        match direction {
+            Direction::Up => Self {
+                x: self.x,
+                y: self.y - 1,
+            },
+            Direction::Down => Self {
+                x: self.x,
+                y: self.y + 1,
+            },
+            Direction::Left => Self {
+                x: self.x - 1,
+                y: self.y,
+            },
+            Direction::Right => Self {
+                x: self.x + 1,
+                y: self.y,
+            },
+        }
+    }
+
+    fn add_direction_and_mut(&mut self, direction: Direction) {
+        match direction {
+            Direction::Up => self.y -= 1,
+            Direction::Down => self.y += 1,
+            Direction::Left => self.x -= 1,
+            Direction::Right => self.x += 1,
+        };
     }
 }
 
@@ -165,31 +194,36 @@ impl Character {
 
 fn cursor_intent_processor(
     mut cursor: ResMut<Cursor>,
+    grid: Res<SpatialGrid>,
     mut intent_reader: MessageReader<CursorIntentMessage>,
-    // mut query: Query<(&Character, &Position)>,
+    mut query: Query<&Direction, (With<Character>, With<Position>)>,
     mut commands: Commands,
 ) {
     for intent in intent_reader.read() {
         match intent {
             CursorIntentMessage::GoBack => {
-                cursor.decrement();
+                if let Some(entity) = grid.map.get(&cursor.get_rewind_pos())
+                    && let Ok(dir) = query.get_mut(*entity)
+                {
+                    cursor.rewind(*dir);
+                    commands.entity(*entity).insert(PendingDespawn);
+                }
             }
             CursorIntentMessage::Print(key_code) => {
                 if let Some(c) = key_code.as_char() {
-                    spawn_character(c, cursor.position, &mut commands);
-                    cursor.push_to_history(Character::new(c));
+                    spawn_character(c, cursor.position, cursor.direction, &mut commands);
                     if let Some(dir) = cursor.find_direction_match() {
                         cursor.direction.transition(dir);
                     }
-                    cursor.increment();
+                    cursor.move_forward();
                 }
             }
         }
     }
 }
 
-fn spawn_character(char: char, position: Position, commands: &mut Commands) {
-    commands.spawn((Character::new(char), position));
+fn spawn_character(char: char, position: Position, direction: Direction, commands: &mut Commands) {
+    commands.spawn((Character::new(char), position, direction));
 }
 
 // fn match_state(history: Vec<Position, DirectionState>) -> Option<DirectionState> {

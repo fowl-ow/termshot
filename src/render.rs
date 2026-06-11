@@ -4,6 +4,7 @@ use bevy::{
     app::{AppExit, Plugin, PostUpdate, Startup},
     ecs::{
         message::MessageWriter,
+        query::{Added, Changed, Spawned},
         resource::Resource,
         schedule::{IntoScheduleConfigs, common_conditions::resource_changed},
         system::{Commands, In, IntoSystem, Query, Res, SystemParamFunction},
@@ -38,7 +39,7 @@ impl Plugin for TermshotRenderPlugin {
     }
 }
 
-fn render_characters(query: Query<(&Character, &Position)>) -> anyhow::Result<()> {
+fn render_characters(query: Query<(&Character, &Position), Spawned>) -> anyhow::Result<()> {
     let mut out = stdout().lock();
     queue!(out, SavePosition)?;
     for (char, pos) in query {
