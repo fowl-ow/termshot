@@ -1,21 +1,25 @@
 use std::io::{Write, stdout};
 
 use bevy::{
-    app::{AppExit, Plugin, PostUpdate},
+    app::{AppExit, Plugin, PostUpdate, Startup},
     ecs::{
         message::MessageWriter,
         resource::Resource,
-        system::{Commands, In, IntoSystem, Query, Res},
+        schedule::{IntoScheduleConfigs, common_conditions::resource_changed},
+        system::{Commands, In, IntoSystem, Query, Res, SystemParamFunction},
     },
 };
 use crossterm::{
-    cursor::MoveTo,
-    queue,
+    cursor::{MoveTo, RestorePosition, SavePosition},
+    execute, queue,
     style::Print,
     terminal::{Clear, ClearType},
 };
 
-use crate::terminal::BufferSize;
+use crate::{
+    game::{Character, Cursor, Position},
+    terminal::BufferSize,
+};
 
 pub struct TermshotRenderPlugin;
 
@@ -25,50 +29,43 @@ impl Plugin for TermshotRenderPlugin {
             PostUpdate,
             (
                 // render_positions.pipe(error_handler_system),
-                render_hello_there.pipe(error_handler_system),
+                // render_hello_there.pipe(error_handler_system),
+                render_characters.pipe(error_handler_system),
+                // render_cursor.pipe(error_handler_system),
             ),
         );
+        app.add_systems(PostUpdate, render_cursor.run_if(resource_changed::<Cursor>));
     }
 }
 
-// pub fn render_positions(buff_size: Res<BufferSize>, query: Query<&Position>) -> anyhow::Result<()> {
-//     let BufferSize { cols, rows } = buff_size.as_ref();
-//
-//     let mut out = stdout().lock();
-//     queue!(out, Clear(ClearType::All))?;
-//     for Position { col, row } in &query {
-//         if !(col >= cols || row >= rows) {
-//             queue!(out, MoveTo(0, 0), MoveTo(*col, *row), Print("x"))?;
-//         }
-//     }
-//     out.flush()?;
-//
-//     Ok(())
-// }
-
-pub fn render_hello_there(buff_size: Res<BufferSize>) -> anyhow::Result<()> {
-    let BufferSize { cols, rows } = buff_size.as_ref();
-
-    let center_col = cols / 2;
-    let center_row = rows / 2;
-
-    let start_col = center_col - 6;
-
-    if *cols >= center_col + 6 {
-        let mut out = stdout().lock();
-        queue!(
-            out,
-            Clear(ClearType::All),
-            MoveTo(0, 0),
-            MoveTo(start_col, center_row),
-            Print("hello there!")
-        )?;
-        out.flush()?;
+fn render_characters(query: Query<(&Character, &Position)>) -> anyhow::Result<()> {
+    let mut out = stdout().lock();
+    queue!(out, SavePosition)?;
+    for (char, pos) in query {
+        let c = match char.char {
+            ' ' => '_',
+            other => other,
+        };
+        queue!(out, MoveTo(0, 0), MoveTo(pos.x, pos.y), Print(c))?;
     }
+    queue!(out, RestorePosition)?;
+    out.flush()?;
     Ok(())
 }
 
-pub fn error_handler_system(
+fn render_cursor(cursor: Res<Cursor>, buff_size: Res<BufferSize>) {
+    let mut out = stdout().lock();
+    let _ = execute!(
+        out,
+        MoveTo(0, 0),
+        MoveTo(cursor.position.x, cursor.position.y)
+    );
+    // if cursor.position.x <= buff_size.cols && cursor.position.y <= buff_size.rows {
+    //     let out = stdout().lock();
+    // }
+}
+
+fn error_handler_system(
     In(result): In<Result<(), anyhow::Error>>,
     mut writer: MessageWriter<AppExit>,
 ) {

@@ -11,7 +11,7 @@ use bevy::{
     log::warn,
 };
 use crossterm::{
-    cursor::{Hide, MoveTo, Show},
+    cursor::{EnableBlinking, Hide, MoveTo, SetCursorStyle, Show},
     execute,
     terminal::{
         Clear, EnterAlternateScreen, LeaveAlternateScreen, SetTitle, disable_raw_mode,
@@ -45,8 +45,9 @@ fn setup_terminal() -> anyhow::Result<()> {
         io::stdout(),
         EnterAlternateScreen,
         SetTitle(TITLE),
-        Hide,
         MoveTo(0, 0),
+        SetCursorStyle::BlinkingUnderScore,
+        EnableBlinking,
         Clear(crossterm::terminal::ClearType::All)
     )?;
     Ok(())
@@ -54,7 +55,7 @@ fn setup_terminal() -> anyhow::Result<()> {
 
 fn clean_up_terminal(mut reader: MessageReader<AppExit>) -> anyhow::Result<()> {
     if reader.read().next().is_some() {
-        execute!(io::stdout(), LeaveAlternateScreen, Show)?;
+        execute!(io::stdout(), LeaveAlternateScreen)?;
         disable_raw_mode()?;
     }
     Ok(())

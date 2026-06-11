@@ -16,6 +16,7 @@ pub struct TermshotTerminalEventPlugin;
 impl Plugin for TermshotTerminalEventPlugin {
     fn build(&self, app: &mut bevy::app::App) {
         app.add_systems(PreUpdate, process_events.pipe(process_event_error_handler));
+        app.add_message::<KeyEventMessage>();
     }
 }
 

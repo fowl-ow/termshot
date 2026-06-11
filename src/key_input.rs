@@ -13,7 +13,7 @@ pub struct TermshotInputPlugin;
 
 impl Plugin for TermshotInputPlugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.add_message::<KeyEventMessage>();
+        app.add_message::<CursorIntentMessage>();
         app.add_systems(PreUpdate, process_key_events);
     }
 }
