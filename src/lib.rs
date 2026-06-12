@@ -27,8 +27,8 @@ use crossterm::{
 
 use crate::{
     event::TermshotTerminalEventPlugin, game::TermshotGameplayPlugin,
-    key_input::TermshotInputPlugin, render::TermshotRenderPlugin, state::TermshotGameStatePlugin,
-    terminal::TermshotTerminalPlugin,
+    key_input::TermshotInputPlugin, map::SpatialGridPlugin, render::TermshotRenderPlugin,
+    state::TermshotGameStatePlugin, terminal::TermshotTerminalPlugin,
 };
 
 mod cursor;
@@ -48,6 +48,7 @@ pub fn app() -> Result<()> {
                 TermshotTerminalPlugin,
                 TermshotTerminalEventPlugin,
                 TermshotGameStatePlugin,
+                SpatialGridPlugin,
                 TermshotGameplayPlugin,
                 TermshotInputPlugin,
                 TermshotRenderPlugin,
