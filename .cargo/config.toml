@@ -1,6 +1,9 @@
 # /path/to/project/.cargo/config.toml
 [target.aarch64-apple-darwin]
 rustflags = [
+
+  "-C",
+  "link-arg=-Wl,-undefined,dynamic_lookup",
   # Nightly
   "-Zshare-generics=y",
   "-Zthreads=0",

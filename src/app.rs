@@ -5,7 +5,7 @@ use std::{io, process::exit, thread::sleep, time::Duration};
 use anyhow::Result;
 
 use bevy::{
-    MinimalPlugins,
+    DefaultPlugins, MinimalPlugins,
     app::{App, AppExit, PluginGroup, ScheduleRunnerPlugin, Startup, Update},
     ecs::{
         component::Component,
@@ -31,19 +31,11 @@ use crate::{
     state::TermshotGameStatePlugin, terminal::TermshotTerminalPlugin,
 };
 
-mod cursor;
-mod event;
-mod game;
-mod key_input;
-mod map;
-mod render;
-mod state;
-mod terminal;
-
 pub fn app() -> Result<()> {
     App::new()
         .add_plugins((
-            MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs(1 / 12))),
+            DefaultPlugins,
+            ScheduleRunnerPlugin::run_loop(Duration::from_millis(50)),
             (
                 TermshotTerminalPlugin,
                 TermshotTerminalEventPlugin,

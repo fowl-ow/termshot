@@ -5,8 +5,20 @@ edition = "2024"
 
 [dependencies]
 crossterm = "0.29.0"
-bevy = { version = "0.18.1", features = ["debug"] }
+bevy = { version = "0.18.1", default-features = false }
 anyhow = "1.0.102"
+
+[features]
+default = [
+  "bevy/dev",
+  "bevy/audio",
+  "bevy/default_app",
+  "bevy/std",
+  "bevy/sysinfo_plugin",
+  "bevy/multi_threaded",
+  "bevy/scene",
+  "bevy/hotpatching",
+]
 
 [lints.clippy]
 # for bevy projects because of Res<T> and ResMut<T>

@@ -8,6 +8,7 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    bevy_cli.url = "github:TheBevyFlock/bevy_cli";
   };
 
   outputs =
@@ -15,12 +16,12 @@
       flake-parts,
       nixpkgs,
       rust-overlay,
+      bevy_cli,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "aarch64-darwin"
-        "aarch64-linux"
         "x86_64-linux"
       ];
 
@@ -41,12 +42,19 @@
               ];
             }
           );
+
+          bevyCliPackage = bevy_cli.packages.${system}.default.overrideAttrs (old: {
+            nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.pkg-config ];
+            buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.zlib ];
+          });
         in
         {
           devShells.default = pkgs.mkShell {
             packages = [
               rustToolchain
+              bevyCliPackage
               pkgs.pkg-config
+              pkgs.dioxus-cli
             ];
 
             RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
