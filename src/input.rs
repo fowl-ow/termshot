@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventState, KeyModifiers};
 
-use crate::event::KeyEventMessage;
+use crate::terminal_event::KeyEventMessage;
 
 pub struct TermshotInputPlugin;
 
@@ -10,16 +10,6 @@ impl Plugin for TermshotInputPlugin {
         app.add_message::<CursorIntentMessage>();
         app.add_systems(PreUpdate, process_key_events);
     }
-}
-
-#[derive(Resource, Debug, Default)]
-pub struct KeyInputHistory(Vec<KeyInput>);
-
-#[derive(Debug)]
-pub enum KeyInput {
-    KeyPress(KeyCode),
-    Backspace,
-    Other,
 }
 
 // #[derive(Message)]
