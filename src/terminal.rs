@@ -27,16 +27,12 @@ pub struct BufferSize {
     pub rows: u16,
 }
 
-pub struct TermshotTerminalPlugin;
-
-impl Plugin for TermshotTerminalPlugin {
-    fn build(&self, app: &mut bevy::app::App) {
-        let (cols, rows) =
-            size().expect("Panicking in TerminalPlugin Setup: Buffer size can't be determined!");
-        app.insert_resource(BufferSize { cols, rows });
-        app.add_systems(Startup, setup_terminal.pipe(handle_terminal_errors));
-        app.add_systems(Last, clean_up_terminal.pipe(handle_terminal_errors));
-    }
+pub(super) fn plugin(app: &mut bevy::app::App) {
+    let (cols, rows) =
+        size().expect("Panicking in TerminalPlugin Setup: Buffer size can't be determined!");
+    app.insert_resource(BufferSize { cols, rows });
+    app.add_systems(Startup, setup_terminal.pipe(handle_terminal_errors));
+    app.add_systems(Last, clean_up_terminal.pipe(handle_terminal_errors));
 }
 
 fn setup_terminal() -> anyhow::Result<()> {

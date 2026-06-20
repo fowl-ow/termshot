@@ -18,8 +18,7 @@ use bevy::{
 };
 
 use crate::{
-    cursor, key_input::CursorIntentMessage, map::SpatialGrid, state::GameState,
-    terminal::BufferSize,
+    key_input::CursorIntentMessage, map::SpatialGrid, state::GameState, terminal::BufferSize,
 };
 
 pub struct TermshotGameplayPlugin;

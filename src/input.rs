@@ -1,10 +1,4 @@
-use bevy::{
-    app::{AppExit, Plugin, PreUpdate},
-    ecs::{
-        message::{Message, MessageReader, MessageWriter},
-        system::{Commands, If, In},
-    },
-};
+use bevy::prelude::*;
 use crossterm::event::{KeyCode, KeyEvent, KeyEventState, KeyModifiers};
 
 use crate::event::KeyEventMessage;
@@ -18,11 +12,21 @@ impl Plugin for TermshotInputPlugin {
     }
 }
 
-#[derive(Message)]
-pub enum CursorIntentMessage {
-    GoBack,
-    Print(KeyCode),
+#[derive(Resource, Debug, Default)]
+pub struct KeyInputHistory(Vec<KeyInput>);
+
+#[derive(Debug)]
+pub enum KeyInput {
+    KeyPress(KeyCode),
+    Backspace,
+    Other,
 }
+
+// #[derive(Message)]
+// pub enum CursorIntentMessage {
+//     GoBack,
+//     Print(KeyCode),
+// }
 
 #[expect(unused_variables)]
 pub fn process_key_events(
