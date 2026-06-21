@@ -3,7 +3,7 @@ use std::time::Duration;
 use better_default::Default;
 use bevy::{prelude::*, time::Timer};
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Debug, Default, Clone)]
 pub(crate) struct Position {
     pub x: f32,
     pub y: f32,

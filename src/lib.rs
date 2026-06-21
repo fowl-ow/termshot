@@ -26,7 +26,7 @@ impl Plugin for TermshotPlugin {
                 terminal::terminal_plugin,
                 terminal_event::terminal_event_plugin,
                 time::time_plugin,
-                game::plugin,
+                game::game_plugin,
             ),
         ))
         .configure_sets(FixedPreUpdate, (InputSystems, TimeSystems))

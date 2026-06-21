@@ -4250,6 +4250,7 @@ name = "termshot"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "approx",
  "better_default",
  "bevy",
  "crossterm",

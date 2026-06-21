@@ -54,15 +54,9 @@ pub fn process_event_error_handler(In(result): In<Result<(), anyhow::Error>>) {
 mod test {
     use super::*;
 
-    fn setup_app() -> App {
-        let mut app = App::new();
-        app.add_plugins((MinimalPlugins, super::terminal_event_plugin));
-        app
-    }
-
     #[test]
     fn test() {
-        let mut app = setup_app();
-        app.update();
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, terminal_event_plugin));
     }
 }

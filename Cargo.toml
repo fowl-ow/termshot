@@ -8,6 +8,7 @@ crossterm = "0.29.0"
 bevy = { version = "0.18.1", default-features = false }
 anyhow = "1.0.102"
 better_default = "1.0.5"
+approx = "0.5.1"
 
 [features]
 default = [
