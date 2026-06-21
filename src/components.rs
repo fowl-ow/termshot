@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use better_default::Default;
 use bevy::{prelude::*, time::Timer};
 
@@ -11,8 +13,9 @@ pub(crate) struct Position {
 #[default(0: 3)]
 pub(crate) struct Health(u8);
 
-#[derive(Component, Debug, Default)]
-pub(crate) struct TimeToLive(Timer);
+#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[default(0: Timer::new(Duration::from_secs(20), TimerMode::Once))]
+pub(crate) struct TimeToLive(pub Timer);
 
 #[derive(Component, Debug, Default)]
 #[default(0: 1.0)]

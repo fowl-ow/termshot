@@ -18,6 +18,7 @@ mod resources;
 mod state;
 mod terminal;
 mod terminal_event;
+mod time;
 
 pub struct TermshotPlugin;
 
