@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    TimeSystems,
+    CleanupSystems, TimeSystems,
     components::{Dead, TimeToLive},
 };
 
@@ -9,6 +9,10 @@ pub fn time_plugin(app: &mut App) {
     app.add_systems(
         FixedPreUpdate,
         (advance_timer, apply_death).chain().in_set(TimeSystems),
+    )
+    .add_systems(
+        FixedPostUpdate,
+        cleanup_dead_entities.in_set(CleanupSystems),
     );
 }
 
@@ -28,6 +32,12 @@ fn apply_death(mut commands: Commands, mut timers: Query<(Entity, &TimeToLive)>)
     }
 }
 
+fn cleanup_dead_entities(mut commands: Commands, dead_entities: Query<Entity, With<Dead>>) {
+    for e in dead_entities.iter() {
+        commands.entity(e).despawn();
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::{ops::Add, time::Duration};
@@ -37,7 +47,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_tick_and_death_systems() {
+    fn tick_death_and_cleanup_systems_work() {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, time_plugin));
         app.insert_resource(TimeUpdateStrategy::FixedTimesteps(1));
@@ -53,6 +63,6 @@ mod test {
         app.update();
         app.update();
 
-        assert!(app.world().get::<Dead>(ttl_entity).is_some());
+        assert!(app.world().get_entity(ttl_entity).is_err());
     }
 }
