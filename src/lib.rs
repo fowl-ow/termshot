@@ -28,8 +28,9 @@ impl Plugin for TermshotPlugin {
             DefaultPlugins,
             ScheduleRunnerPlugin::run_loop(Duration::from_millis(50)),
             (
-                terminal::plugin,
-                terminal_event::plugin,
+                terminal::terminal_plugin,
+                terminal_event::terminal_event_plugin,
+                time::time_plugin,
                 TermshotGameStatePlugin,
                 SpatialGridPlugin,
                 TermshotGameplayPlugin,

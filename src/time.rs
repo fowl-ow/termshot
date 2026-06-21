@@ -5,8 +5,11 @@ use crate::{
     components::{Dead, TimeToLive},
 };
 
-fn time_plugin(app: &mut App) {
-    app.add_systems(FixedPreUpdate, advance_timer.in_set(TimeSystems));
+pub fn time_plugin(app: &mut App) {
+    app.add_systems(
+        FixedPreUpdate,
+        (advance_timer, apply_death).chain().in_set(TimeSystems),
+    );
 }
 
 fn advance_timer(time: Res<Time>, mut timers: Query<&mut TimeToLive>) {

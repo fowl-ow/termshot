@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::terminal::BufferSize;
 
-pub(super) fn plugin(app: &mut App) {
+pub(super) fn terminal_event_plugin(app: &mut App) {
     app.add_systems(
         FixedPreUpdate,
         process_events.pipe(process_event_error_handler),
@@ -56,7 +56,7 @@ mod test {
 
     fn setup_app() -> App {
         let mut app = App::new();
-        app.add_plugins((MinimalPlugins, super::plugin));
+        app.add_plugins((MinimalPlugins, super::terminal_event_plugin));
         app
     }
 

@@ -1,15 +1,7 @@
 use std::io;
 
-use bevy::{
-    app::{AppExit, Last, Plugin, PostUpdate, Startup, Update},
-    ecs::{
-        event::Event,
-        message::MessageReader,
-        resource::Resource,
-        system::{Commands, In, IntoSystem},
-    },
-    log::warn,
-};
+use bevy::prelude::*;
+
 use crossterm::{
     cursor::{EnableBlinking, Hide, MoveTo, SetCursorStyle, Show},
     execute,
@@ -27,7 +19,7 @@ pub struct BufferSize {
     pub rows: u16,
 }
 
-pub(super) fn plugin(app: &mut bevy::app::App) {
+pub(super) fn terminal_plugin(app: &mut bevy::app::App) {
     let (cols, rows) =
         size().expect("Panicking in TerminalPlugin Setup: Buffer size can't be determined!");
     app.insert_resource(BufferSize { cols, rows });

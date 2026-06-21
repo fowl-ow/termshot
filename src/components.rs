@@ -5,8 +5,8 @@ use bevy::{prelude::*, time::Timer};
 
 #[derive(Component, Debug, Default)]
 pub(crate) struct Position {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
 }
 
 #[derive(Component, Debug, Default)]
