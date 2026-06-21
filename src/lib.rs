@@ -5,8 +5,8 @@ use std::time::Duration;
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 
 use crate::{
-    game::TermshotGameplayPlugin, input::TermshotInputPlugin, map::SpatialGridPlugin,
-    render::TermshotRenderPlugin, state::TermshotGameStatePlugin,
+    input::TermshotInputPlugin, map::SpatialGridPlugin, render::TermshotRenderPlugin,
+    state::TermshotGameStatePlugin,
 };
 
 mod components;
@@ -31,9 +31,9 @@ impl Plugin for TermshotPlugin {
                 terminal::terminal_plugin,
                 terminal_event::terminal_event_plugin,
                 time::time_plugin,
+                game::plugin,
                 TermshotGameStatePlugin,
                 SpatialGridPlugin,
-                TermshotGameplayPlugin,
                 TermshotInputPlugin,
                 TermshotRenderPlugin,
             ),
