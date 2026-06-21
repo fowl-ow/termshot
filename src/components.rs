@@ -14,7 +14,7 @@ pub(crate) struct Position {
 pub(crate) struct Health(u8);
 
 #[derive(Component, Debug, Default, Deref, DerefMut)]
-#[default(0: Timer::new(Duration::from_secs(20), TimerMode::Once))]
+#[default(0: Timer::new(Duration::from_secs(15), TimerMode::Once))]
 pub(crate) struct TimeToLive(pub Timer);
 
 #[derive(Component, Debug, Default)]

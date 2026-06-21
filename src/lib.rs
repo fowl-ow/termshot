@@ -4,11 +4,6 @@ use std::time::Duration;
 
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 
-use crate::{
-    input::TermshotInputPlugin, map::SpatialGridPlugin, render::TermshotRenderPlugin,
-    state::TermshotGameStatePlugin,
-};
-
 mod components;
 mod game;
 mod input;
@@ -32,10 +27,6 @@ impl Plugin for TermshotPlugin {
                 terminal_event::terminal_event_plugin,
                 time::time_plugin,
                 game::plugin,
-                TermshotGameStatePlugin,
-                SpatialGridPlugin,
-                TermshotInputPlugin,
-                TermshotRenderPlugin,
             ),
         ))
         .configure_sets(FixedPreUpdate, (InputSystems, TimeSystems))

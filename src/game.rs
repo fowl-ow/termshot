@@ -4,7 +4,7 @@ use std::{fmt::Display, ops::Deref};
 use bevy::prelude::*;
 
 use crate::components::{Cursor, Enemy, Position};
-use crate::{map::SpatialGrid, state::GameState, terminal::BufferSize};
+use crate::terminal::BufferSize;
 
 pub(super) fn plugin(app: &mut App) {
     // spawn cursor in poststartup so we can later first spawn other stuff in the map like walls and

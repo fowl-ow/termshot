@@ -1,6 +1,6 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 
-use crate::game::Position;
+use crate::components::Position;
 
 #[derive(Resource, Debug)]
 struct PositionMap(HashMap<Position, Entity>);
