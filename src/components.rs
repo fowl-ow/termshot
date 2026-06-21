@@ -1,49 +1,49 @@
 use better_default::Default;
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Timer};
 
 #[derive(Component, Debug, Default)]
-struct Position {
+pub(crate) struct Position {
     x: f32,
     y: f32,
 }
 
 #[derive(Component, Debug, Default)]
 #[default(0: 3)]
-struct Health(u8);
+pub(crate) struct Health(u8);
 
 #[derive(Component, Debug, Default)]
-struct TimeToLive(Timer);
+pub(crate) struct TimeToLive(Timer);
 
 #[derive(Component, Debug, Default)]
 #[default(0: 1.0)]
-struct Speed(f32);
+pub(crate) struct Speed(f32);
 
 #[derive(Component, Debug, Default)]
-struct BlastRadius;
+pub(crate) struct BlastRadius;
 
 #[derive(Component, Debug)]
 #[require(Position, Health)]
-struct Cursor;
+pub(crate) struct Cursor;
 
 #[derive(Component, Debug)]
 #[require(Position, Health)]
-struct Enemy;
+pub(crate) struct Enemy;
 
 #[derive(Component, Debug)]
 #[require(Position, TimeToLive)]
-struct Character(char);
+pub(crate) struct Character(char);
 
 #[derive(Component, Debug)]
 #[require(Position, Speed, BlastRadius)]
-struct Missile;
+pub(crate) struct Missile;
 
 #[derive(Component, Debug)]
 #[require(Position)]
-struct Wall;
+pub(crate) struct Wall;
 
 #[derive(Component, Debug)]
 #[require(Position, Speed)]
-struct Bullet;
+pub(crate) struct Bullet;
 
 #[derive(Component, Debug)]
-struct Dead;
+pub(crate) struct Dead;
