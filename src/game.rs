@@ -13,17 +13,20 @@ pub(super) fn game_plugin(app: &mut App) {
 }
 
 fn spawn_cursor(mut commands: Commands, buff_size: Res<BufferSize>) {
-    let x = f32::from(buff_size.cols / 2);
-    let y = f32::from(buff_size.rows / 2);
-
-    commands.spawn((Cursor, Position { x, y }));
+    commands.spawn((
+        Cursor,
+        Position {
+            x: u32::from(buff_size.cols / 2),
+            y: u32::from(buff_size.rows / 2),
+        },
+    ));
 }
 
 fn spawn_enemy(mut commands: Commands, cursor_position: Single<&Position, With<Cursor>>) {
     commands.spawn((
         Enemy,
         Position {
-            x: cursor_position.x + 20.0,
+            x: cursor_position.x + 20,
             y: cursor_position.y,
         },
     ));
@@ -48,19 +51,17 @@ mod test {
 
         let world = app.world_mut();
 
-        let cursor_pos = world
+        let cursor_pos: Position = *world
             .query_filtered::<&Position, With<Cursor>>()
             .single(world)
-            .unwrap()
-            .clone();
+            .unwrap();
 
-        let enemy_pos = world
+        let enemy_pos: Position = *world
             .query_filtered::<&Position, With<Enemy>>()
             .single(world)
-            .unwrap()
-            .clone();
+            .unwrap();
 
-        assert_relative_eq!(cursor_pos.x + 20.0, enemy_pos.x);
-        assert_relative_eq!(cursor_pos.y, enemy_pos.y);
+        assert_eq!(cursor_pos.x + 20, enemy_pos.x);
+        assert_eq!(cursor_pos.y, enemy_pos.y);
     }
 }

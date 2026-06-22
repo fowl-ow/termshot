@@ -28,6 +28,8 @@ impl Plugin for TermshotPlugin {
                 terminal_event::terminal_event_plugin,
                 time::time_plugin,
                 game::game_plugin,
+                input::input_plugin,
+                map::position_map_plugin,
             ),
         ))
         .configure_sets(

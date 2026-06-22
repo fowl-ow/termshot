@@ -7,7 +7,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{InputSystems, terminal_event::KeyEvents};
 
-fn input_plugin(app: &mut App) {
+pub(super) fn input_plugin(app: &mut App) {
     // app.add_systems(FixedUpdate, system.in_set(IntentSystems));
     app.init_resource::<KeyInputs>();
     app.add_systems(

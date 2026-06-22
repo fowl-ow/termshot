@@ -1,12 +1,12 @@
-use std::time::Duration;
+use std::{hash::Hash, time::Duration};
 
 use better_default::Default;
 use bevy::{prelude::*, time::Timer};
 
-#[derive(Component, Debug, Default, Clone)]
+#[derive(Component, Debug, Default, Clone, Hash, PartialEq, Eq, Copy)]
 pub(crate) struct Position {
-    pub x: f32,
-    pub y: f32,
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Component, Debug, Default)]

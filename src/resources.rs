@@ -2,11 +2,8 @@ use bevy::{platform::collections::HashMap, prelude::*};
 
 use crate::components::Position;
 
-#[derive(Resource, Debug)]
-struct PositionMap(HashMap<Position, Entity>);
+#[derive(Resource, Debug, Default, DerefMut, Deref)]
+pub(crate) struct PositionMap(pub HashMap<Position, Entity>);
 
 #[derive(Resource, Debug)]
-struct InputHistory(Vec<u32>);
-
-#[derive(Resource, Debug)]
-struct CommandHistory(Vec<u32>);
+pub(crate) struct CommandHistory(Vec<u32>);
