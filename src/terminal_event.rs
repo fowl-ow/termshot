@@ -2,12 +2,14 @@ use bevy::{ecs::system::command::init_resource, prelude::*};
 use crossterm::event::{Event, KeyEvent, poll, read};
 use std::time::Duration;
 
-use crate::terminal::BufferSize;
+use crate::{TerminalEventSystems, terminal::BufferSize};
 
 pub(super) fn terminal_event_plugin(app: &mut App) {
     app.add_systems(
         FixedPreUpdate,
-        process_events.pipe(process_event_error_handler),
+        process_events
+            .pipe(process_event_error_handler)
+            .in_set(TerminalEventSystems),
     )
     .init_resource::<KeyEvents>()
     .init_resource::<KeyEventHistory>()
@@ -18,7 +20,7 @@ pub(super) fn terminal_event_plugin(app: &mut App) {
 pub(crate) struct KeyEventHistory(Vec<KeyEvent>);
 
 #[derive(Resource, Debug, Default, Deref, DerefMut)]
-pub(crate) struct KeyEvents(Vec<KeyEvent>);
+pub(crate) struct KeyEvents(pub Vec<KeyEvent>);
 
 fn process_events(
     source: Res<EventSourceRes>,

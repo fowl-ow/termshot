@@ -1,61 +1,94 @@
-// use bevy::prelude::*;
-// use crossterm::event::{KeyCode, KeyEvent, KeyEventState, KeyModifiers};
-//
-// use crate::terminal_event::KeyEventMessage;
-//
-// pub struct TermshotInputPlugin;
-//
-// impl Plugin for TermshotInputPlugin {
-//     fn build(&self, app: &mut bevy::app::App) {
-//         app.add_message::<CursorIntentMessage>();
-//         app.add_systems(PreUpdate, process_key_events);
-//     }
-// }
-//
-// // #[derive(Message)]
-// // pub enum CursorIntentMessage {
-// //     GoBack,
-// //     Print(KeyCode),
-// // }
-//
-// #[expect(unused_variables)]
-// pub fn process_key_events(
-//     mut key_event_reader: MessageReader<KeyEventMessage>,
-//     mut exit_writer: MessageWriter<AppExit>,
-//     mut key_press_writer: MessageWriter<CursorIntentMessage>,
-// ) {
-//     for message in key_event_reader.read() {
-//         match message.0 {
-//             KeyEvent {
-//                 code: KeyCode::Char('q'),
-//                 kind: crossterm::event::KeyEventKind::Press,
-//                 modifiers,
-//                 state,
-//             } => {
-//                 exit_writer.write(AppExit::Success);
-//             }
-//             KeyEvent {
-//                 code: KeyCode::Backspace,
-//                 kind: crossterm::event::KeyEventKind::Press,
-//                 modifiers,
-//                 state,
-//             } => {
-//                 key_press_writer.write(CursorIntentMessage::GoBack);
-//             }
-//             KeyEvent {
-//                 code,
-//                 kind: crossterm::event::KeyEventKind::Press,
-//                 modifiers,
-//                 state,
-//             } => {
-//                 key_press_writer.write(CursorIntentMessage::Print(code));
-//             }
-//             KeyEvent {
-//                 code,
-//                 modifiers,
-//                 kind,
-//                 state,
-//             } => {}
-//         }
-//     }
-// }
+use bevy::{
+    ecs::system::entity_command::clear, input::keyboard::KeyCode::KeyI,
+    platform::collections::HashMap, prelude::*,
+};
+
+use crossterm::event::{KeyCode, KeyEvent};
+
+use crate::{InputSystems, terminal_event::KeyEvents};
+
+fn input_plugin(app: &mut App) {
+    // app.add_systems(FixedUpdate, system.in_set(IntentSystems));
+    app.init_resource::<KeyInputs>();
+    app.add_systems(
+        FixedPreUpdate,
+        key_event_to_key_input_system.in_set(InputSystems),
+    );
+}
+
+fn key_event_to_key_input_system(key_events: Res<KeyEvents>, mut key_inputs: ResMut<KeyInputs>) {
+    key_inputs.0.clear();
+    key_inputs.0 = key_events.iter().filter_map(|e| e.to_key_input()).collect();
+}
+
+#[derive(Resource, Default)]
+pub(crate) struct KeyInputs(Vec<KeyInput>);
+
+#[derive(PartialEq, Eq, Debug)]
+pub(crate) enum KeyInput {
+    GoBack,
+    Char(char),
+}
+
+trait KeyEventToInput {
+    fn to_key_input(self) -> Option<KeyInput>;
+}
+
+impl KeyEventToInput for KeyEvent {
+    #[expect(unused_variables)]
+    fn to_key_input(self) -> Option<KeyInput> {
+        match self {
+            KeyEvent {
+                code: KeyCode::Backspace,
+                modifiers,
+                kind,
+                state,
+            } => Some(KeyInput::GoBack),
+            KeyEvent {
+                code: KeyCode::Char(c),
+                modifiers,
+                kind,
+                state,
+            } => Some(KeyInput::Char(c)),
+            KeyEvent {
+                code,
+                modifiers,
+                kind,
+                state,
+            } => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bevy::time::TimeUpdateStrategy;
+    use crossterm::event::KeyCode;
+    use crossterm::event::KeyModifiers;
+
+    use super::*;
+
+    #[test]
+    fn key_events_are_correctly_transformed_to_key_inputs() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, input_plugin));
+        app.insert_resource(TimeUpdateStrategy::FixedTimesteps(1));
+
+        let key_events = vec![
+            KeyEvent::new(KeyCode::Char('q'), KeyModifiers::NONE),
+            KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE),
+            KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE),
+        ];
+        app.insert_resource(KeyEvents(key_events));
+
+        let key_inputs = vec![KeyInput::Char('q'), KeyInput::GoBack, KeyInput::Char('a')];
+
+        app.update();
+        app.update();
+
+        assert_eq!(
+            app.world().get_resource::<KeyInputs>().unwrap().0,
+            key_inputs
+        );
+    }
+}

@@ -8,6 +8,7 @@ mod components;
 mod game;
 mod input;
 mod map;
+mod player_intent;
 mod render;
 mod resources;
 mod state;
@@ -29,7 +30,10 @@ impl Plugin for TermshotPlugin {
                 game::game_plugin,
             ),
         ))
-        .configure_sets(FixedPreUpdate, (InputSystems, TimeSystems))
+        .configure_sets(
+            FixedPreUpdate,
+            ((TerminalEventSystems, InputSystems).chain(), TimeSystems),
+        )
         .configure_sets(
             FixedUpdate,
             (
@@ -45,6 +49,8 @@ impl Plugin for TermshotPlugin {
     }
 }
 
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+struct TerminalEventSystems;
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 struct InputSystems;
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
