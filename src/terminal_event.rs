@@ -15,12 +15,12 @@ pub(super) fn terminal_event_plugin(app: &mut App) {
 }
 
 #[derive(Resource, Debug, Default, Deref, DerefMut)]
-pub struct KeyEventHistory(Vec<KeyEvent>);
+pub(crate) struct KeyEventHistory(Vec<KeyEvent>);
 
 #[derive(Resource, Debug, Default, Deref, DerefMut)]
-pub struct KeyEvents(Vec<KeyEvent>);
+pub(crate) struct KeyEvents(Vec<KeyEvent>);
 
-pub fn process_events(
+fn process_events(
     source: Res<EventSourceRes>,
     mut buff_size: ResMut<BufferSize>,
     mut key_event_history: ResMut<KeyEventHistory>,
@@ -76,6 +76,7 @@ struct EventSourceRes(Box<dyn EventSource>);
 mod test {
     use std::{collections::VecDeque, sync::Mutex};
 
+    use bevy::time::TimeUpdateStrategy;
     use crossterm::event::{KeyCode, KeyModifiers};
 
     use super::*;
@@ -103,15 +104,63 @@ mod test {
     }
 
     #[test]
-    fn test() {
+    fn test_key_event_ressource_are_filled() {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, terminal_event_plugin));
+        app.insert_resource(TimeUpdateStrategy::FixedTimesteps(1));
+
         let events: Vec<Event> = vec![
             Event::Key(KeyEvent::new(KeyCode::Char('q'), KeyModifiers::NONE)),
             Event::Key(KeyEvent::new(KeyCode::Char('e'), KeyModifiers::NONE)),
             Event::Key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE)),
         ];
 
-        app.insert_resource(EventSourceRes(Box::new(FakeEventSource::new(events))));
+        app.insert_resource(EventSourceRes(Box::new(FakeEventSource::new(
+            events.clone(),
+        ))));
+
+        assert!(
+            app.world()
+                .get_resource::<KeyEventHistory>()
+                .unwrap()
+                .is_empty()
+        );
+        assert!(app.world().get_resource::<KeyEvents>().unwrap().is_empty());
+
+        app.update();
+
+        let key_events: Vec<KeyEvent> = events
+            .iter()
+            .map(|e: &Event| -> KeyEvent { e.as_key_event().unwrap() })
+            .collect();
+
+        assert_eq!(
+            app.world().get_resource::<KeyEvents>().unwrap().0,
+            key_events
+        );
+        assert_eq!(
+            app.world().get_resource::<KeyEventHistory>().unwrap().0,
+            key_events
+        );
+
+        app.insert_resource(EventSourceRes(Box::new(FakeEventSource::new(
+            events.clone(),
+        ))));
+
+        app.update();
+
+        assert_eq!(
+            app.world().get_resource::<KeyEvents>().unwrap().0,
+            key_events
+        );
+        assert_eq!(
+            app.world().get_resource::<KeyEventHistory>().unwrap().0,
+            // key_events.clone().extend_from_slice(&key_events)
+            key_events
+                .iter()
+                .chain(key_events.iter())
+                .cloned()
+                .collect::<Vec<KeyEvent>>()
+        );
     }
 }
