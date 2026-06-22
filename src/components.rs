@@ -25,12 +25,21 @@ pub(crate) struct Speed(f32);
 pub(crate) struct BlastRadius;
 
 #[derive(Component, Debug)]
-#[require(Position, Health)]
+#[require(Position, Health, Direction)]
 pub(crate) struct Cursor;
 
 #[derive(Component, Debug)]
 #[require(Position, Health)]
 pub(crate) struct Enemy;
+
+#[derive(Component, Default)]
+pub(crate) enum Direction {
+    Up,
+    Down,
+    Left,
+    #[default]
+    Right,
+}
 
 #[derive(Component, Debug)]
 #[require(Position, TimeToLive)]
