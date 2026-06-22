@@ -91,7 +91,7 @@ mod test {
 
     impl EventSource for FakeEventSource {
         fn poll(&self) -> anyhow::Result<bool> {
-            Ok(self.0.lock().unwrap().is_empty())
+            Ok(!self.0.lock().unwrap().is_empty())
         }
 
         fn read(&self) -> anyhow::Result<Event> {
@@ -108,6 +108,10 @@ mod test {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, terminal_event_plugin));
         app.insert_resource(TimeUpdateStrategy::FixedTimesteps(1));
+        app.insert_resource(BufferSize {
+            cols: 80,
+            rows: 120,
+        });
 
         let events: Vec<Event> = vec![
             Event::Key(KeyEvent::new(KeyCode::Char('q'), KeyModifiers::NONE)),
@@ -127,6 +131,7 @@ mod test {
         );
         assert!(app.world().get_resource::<KeyEvents>().unwrap().is_empty());
 
+        app.update();
         app.update();
 
         let key_events: Vec<KeyEvent> = events
